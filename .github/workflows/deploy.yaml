@@ -47,6 +47,24 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Debug RSA Key File
+        run: |
+          echo "RSA Key File Content:"
+          cat ~/.ssh/id_rsa
+          echo "RSA Key File Permissions:"
+          ls -l ~/.ssh/id_rsa
+
+      - name: Debug Known Hosts
+        run: |
+          echo "Adding EC2 Host Key to Known Hosts:"
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          echo "Known Hosts Content:"
+          cat ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'Connection Successful'"
+
       - name: Deploy on EC2
         run: |
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
