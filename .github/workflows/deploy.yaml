@@ -41,29 +41,24 @@ jobs:
     steps:
       - name: Set up SSH
         run: |
+          echo "Step 1: Creating SSH directory"
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          echo "${{ secrets.EC2_PRIVATE_KEY }}" | cat > ~/.ssh/id_rsa
+          
+          echo "Step 2: Writing RSA key"
+          printf "%s\n" "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          
+          echo "Step 3: Adding EC2 host key to known_hosts"
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Debug RSA Key File
-        run: |
-          echo "RSA Key File Content:"
+          
+          echo "Step 4: Debugging SSH setup"
+          ls -l ~/.ssh
           cat ~/.ssh/id_rsa
-          echo "RSA Key File Permissions:"
-          ls -l ~/.ssh/id_rsa
-
-      - name: Debug Known Hosts
-        run: |
-          echo "Adding EC2 Host Key to Known Hosts:"
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          echo "Known Hosts Content:"
           cat ~/.ssh/known_hosts
 
       - name: Test SSH Connection
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'Connection Successful'"
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'Connection Successful'"
 
       - name: Deploy on EC2
         run: |
